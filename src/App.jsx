@@ -1,15 +1,19 @@
-import { useRef, useState, useCallback } from 'react';
+import { useRef, useState, useCallback } from "react";
 
-import Places from './components/Places.jsx';
-import Modal from './components/Modal.jsx';
-import DeleteConfirmation from './components/DeleteConfirmation.jsx';
-import logoImg from './assets/logo.png';
-import AvailablePlaces from './components/AvailablePlaces.jsx';
+import Places from "./components/Places.jsx";
+import Modal from "./components/Modal.jsx";
+import DeleteConfirmation from "./components/DeleteConfirmation.jsx";
+import logoImg from "./assets/logo.png";
+import AvailablePlaces from "./components/AvailablePlaces.jsx";
+import { updateUserPlaces } from "./http.js";
+import Error from "./components/Error.jsx";
 
 function App() {
   const selectedPlace = useRef();
 
   const [userPlaces, setUserPlaces] = useState([]);
+
+  const [errorUpdatingPlaces, setErrorUpdatingPlaces] = useState();
 
   const [modalIsOpen, setModalIsOpen] = useState(false);
 
@@ -22,7 +26,7 @@ function App() {
     setModalIsOpen(false);
   }
 
-  function handleSelectPlace(selectedPlace) {
+  async function handleSelectPlace(selectedPlace) {
     setUserPlaces((prevPickedPlaces) => {
       if (!prevPickedPlaces) {
         prevPickedPlaces = [];
@@ -32,6 +36,26 @@ function App() {
       }
       return [selectedPlace, ...prevPickedPlaces];
     });
+
+    /* 
+    the folowing code is aka optimistic state update,
+    where you update FE first (setUserPlaces above)
+    and send BE request afterwards (try & catch below)
+
+    optimistinc updating has better UX than loading progress bar
+    this works when performing updates, 
+    but does not work with fetching data */
+    try {
+      await updateUserPlaces([selectedPlace, ...userPlaces]);
+    } catch (error) {
+      /* 
+      if something goes wrong, 
+      we roll back the change and update UI  */
+      setUserPlaces(userPlaces);
+      setErrorUpdatingPlaces({
+        message: error.message || "failed to update places",
+      });
+    }
   }
 
   const handleRemovePlace = useCallback(async function handleRemovePlace() {
@@ -42,8 +66,22 @@ function App() {
     setModalIsOpen(false);
   }, []);
 
+  function handleError() {
+    setErrorUpdatingPlaces(null);
+  }
+
   return (
     <>
+      <Modal open={errorUpdatingPlaces} onClose={handleError}>
+        {/* the modal opens (open sets to true) if we have an error */}
+        {errorUpdatingPlaces && (
+          <Error
+            title="An error occured"
+            message={errorUpdatingPlaces.message}
+            onConfirm={handleError}
+          />
+        )}
+      </Modal>
       <Modal open={modalIsOpen} onClose={handleStopRemovePlace}>
         <DeleteConfirmation
           onCancel={handleStopRemovePlace}
