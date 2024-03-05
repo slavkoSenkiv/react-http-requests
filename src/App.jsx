@@ -1,5 +1,4 @@
 import { useRef, useState, useCallback, useEffect } from "react";
-
 import Places from "./components/Places.jsx";
 import Modal from "./components/Modal.jsx";
 import DeleteConfirmation from "./components/DeleteConfirmation.jsx";
@@ -14,9 +13,7 @@ function App() {
   const [userPlaces, setUserPlaces] = useState([]);
   const [isFetching, setIsFetching] = useState(false);
   const [error, setError] = useState();
-
   const [errorUpdatingPlaces, setErrorUpdatingPlaces] = useState();
-
   const [modalIsOpen, setModalIsOpen] = useState(false);
 
   useEffect(() => {
@@ -50,7 +47,7 @@ function App() {
       if (prevPickedPlaces.some((place) => place.id === selectedPlace.id)) {
         return prevPickedPlaces;
       }
-      return [selectedPlace, ...prevPickedPlaces];
+      return [...prevPickedPlaces, selectedPlace];
     });
 
     /* 
@@ -58,11 +55,11 @@ function App() {
     where you update FE first (setUserPlaces above)
     and send BE request afterwards (try & catch below)
 
-    optimistinc updating has better UX than loading progress bar
+    optimistinc updating has better UX than loading progress bar.
     this works when performing updates, 
     but does not work with fetching data */
     try {
-      await updateUserPlaces([selectedPlace, ...userPlaces]);
+      await updateUserPlaces([...userPlaces, selectedPlace]);
     } catch (error) {
       /* 
       if something goes wrong, 
