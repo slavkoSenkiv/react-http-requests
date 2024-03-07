@@ -127,7 +127,13 @@ function App() {
         </p>
       </header>
       <main>
-        {error && <Error title="An error occured" message={error.message} />}
+        {error && (
+          <Error
+            title="An error occured"
+            message={error.message}
+            onConfirm={handleError}
+          />
+        )}
         {!error && (
           <Places
             title="I'd like to visit ..."

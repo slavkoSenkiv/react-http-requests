@@ -5,8 +5,8 @@ import { sortPlacesByDistance } from "../loc.js";
 import { fetchAvailablePlaces } from "../http.js";
 
 export default function AvailablePlaces({ onSelectPlace }) {
-  const [isFetching, setIsFetching] = useState(false);
   const [availablePlaces, setAvailablePlaces] = useState([]);
+  const [isFetching, setIsFetching] = useState(false);
   const [error, setError] = useState();
 
   useEffect(() => {
@@ -41,20 +41,10 @@ export default function AvailablePlaces({ onSelectPlace }) {
     <Places
       title="Available Places"
       places={availablePlaces}
-      isLoading={false}
-      loadingText="Fetching place data..."
       fallbackText="No places available."
       onSelectPlace={onSelectPlace}
+      isLoading={isFetching}
+      loadingText="Fetching place data..."
     />
   );
 }
-
-/*
-fetch("http://localhost:3000/places")
-    .then((response) => {
-      return response.json();
-    })
-    .then((resData) => {
-      setAvailablePlaces(resData.places);
-    });
- */
