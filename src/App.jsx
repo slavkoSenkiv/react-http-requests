@@ -2,19 +2,35 @@ import logo from "./assets/logo.png";
 import Places from "./components/Places";
 import availablePlaces from "./../backend/data/places.json";
 import { useState } from "react";
+import Modal from "./components/Modal";
+import DeleteConfirmation from "./components/DeleteConfirmation";
+
 export default function App() {
-  const [userPlaces, setUserPlaces] = useState();
+  const [userPlaces, setUserPlaces] = useState([]);
+  const [modalIsOpen, setModalIsOpen] = useState(false);
 
   function handleSelectPlace(place) {
     setUserPlaces((prevUserPlaces) => {
-      if (!userPlaces) {
-        return [];
-      }
       if (prevUserPlaces.some((userPlace) => userPlace.id === place.id)) {
         return prevUserPlaces;
       }
       return [...prevUserPlaces, place];
     });
+  }
+
+  function handleRemovePlace(place) {
+    setUserPlaces((prevUserPlaces) => {
+      return prevUserPlaces.filter((userPlace) => userPlace.id !== place.id);
+    });
+  }
+
+  function handleStartRemovePlace(place) {
+    setModalIsOpen(true);
+    handleRemovePlace(place);
+  }
+
+  function handleStopRemovePlace() {
+
   }
 
   return (
@@ -26,11 +42,19 @@ export default function App() {
       </header>
 
       <main>
+
+        <Modal 
+          open={modalIsOpen} 
+          onClose={handleStopRemovePlace}
+        >
+          <DeleteConfirmation />
+        </Modal>
+
         <Places
           title="Selected places"
           fallbackText="click on available places"
           places={userPlaces}
-          onSelectPlace={() => {}}
+          onSelectPlace={handleStartRemovePlace}
         />
         <Places
           title="Available places"
