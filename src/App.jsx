@@ -1,13 +1,14 @@
 import logo from "./assets/logo.png";
 import Places from "./components/Places";
 import availablePlaces from "./../backend/data/places.json";
-import { useState } from "react";
+import { useState, useRef, useCallback } from "react";
 import Modal from "./components/Modal";
 import DeleteConfirmation from "./components/DeleteConfirmation";
 
 export default function App() {
   const [userPlaces, setUserPlaces] = useState([]);
   const [modalIsOpen, setModalIsOpen] = useState(false);
+  const selectedPlace = useRef();
 
   function handleSelectPlace(place) {
     setUserPlaces((prevUserPlaces) => {
@@ -18,19 +19,20 @@ export default function App() {
     });
   }
 
-  function handleRemovePlace(place) {
-    setUserPlaces((prevUserPlaces) => {
-      return prevUserPlaces.filter((userPlace) => userPlace.id !== place.id);
-    });
-  }
-
   function handleStartRemovePlace(place) {
     setModalIsOpen(true);
-    handleRemovePlace(place);
+    selectedPlace.current = place;
   }
 
-  function handleStopRemovePlace() {
+  const handleRemovePlace = useCallback(function handleRemovePlace() {
+    setUserPlaces((prevUserPlaces) => {
+      return prevUserPlaces.filter((userPlace) => userPlace.id !== selectedPlace.current.id);
+    });
+    setModalIsOpen(false);
+  })
 
+  function handleStopRemovePlace() {
+    setModalIsOpen(false);
   }
 
   return (
@@ -42,12 +44,11 @@ export default function App() {
       </header>
 
       <main>
-
-        <Modal 
-          open={modalIsOpen} 
-          onClose={handleStopRemovePlace}
-        >
-          <DeleteConfirmation />
+        <Modal open={modalIsOpen} onClose={handleStopRemovePlace}>
+          <DeleteConfirmation
+            onConfirm={handleRemovePlace}
+            onCancel={handleStopRemovePlace}
+          />
         </Modal>
 
         <Places
