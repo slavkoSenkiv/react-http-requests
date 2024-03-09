@@ -1,14 +1,51 @@
 import logo from "./assets/logo.png";
 import Places from "./components/Places";
 import availablePlaces from "./../backend/data/places.json";
-import { useState, useRef, useCallback } from "react";
+import { useState, useRef, useCallback, useEffect } from "react";
 import Modal from "./components/Modal";
 import DeleteConfirmation from "./components/DeleteConfirmation";
+import { sortPlacesByDistance } from "./loc";
+import { getPlaces, getUserPlaces, updateUserPlaces } from "./http";
 
 export default function App() {
   const [userPlaces, setUserPlaces] = useState([]);
+  const [availableSortedPlaces, setAvailableSortedPlaces] = useState([]);
   const [modalIsOpen, setModalIsOpen] = useState(false);
   const selectedPlace = useRef();
+
+  useEffect(() => {
+    async function fetchData() {
+      try {
+        const userPlacesData = await getUserPlaces();
+        setUserPlaces(userPlacesData);
+
+        const placesData = await getPlaces();
+        navigator.geolocation.getCurrentPosition((position) => {
+          const sortedPlaces = sortPlacesByDistance(
+            placesData,
+            position.coords.latitude,
+            position.coords.longitude
+          );
+          setAvailableSortedPlaces(sortedPlaces);
+        });
+      } catch (error) {
+        console.error("Error fetching data:", error);
+      }
+    }
+
+    fetchData();
+  }, []);
+
+  useEffect(() => {
+    navigator.geolocation.getCurrentPosition((position) => {
+      const sortedPlaces = sortPlacesByDistance(
+        availablePlaces,
+        position.coords.latitude,
+        position.coords.longitude
+      );
+      setAvailableSortedPlaces(sortedPlaces);
+    });
+  }, []);
 
   function handleSelectPlace(place) {
     setUserPlaces((prevUserPlaces) => {
@@ -65,7 +102,7 @@ export default function App() {
         <Places
           title="Available places"
           fallbackText="there are no available places for you"
-          places={availablePlaces}
+          places={availableSortedPlaces}
           onSelectPlace={handleSelectPlace}
         />
       </main>
