@@ -24,12 +24,17 @@ export default function App() {
     selectedPlace.current = place;
   }
 
-  const handleRemovePlace = useCallback(function handleRemovePlace() {
-    setUserPlaces((prevUserPlaces) => {
-      return prevUserPlaces.filter((userPlace) => userPlace.id !== selectedPlace.current.id);
-    });
-    setModalIsOpen(false);
-  })
+  const handleRemovePlace = useCallback(
+    function handleRemovePlace() {
+      setUserPlaces((prevUserPlaces) => {
+        return prevUserPlaces.filter(
+          (userPlace) => userPlace.id !== selectedPlace.current.id
+        );
+      });
+      setModalIsOpen(false);
+    },
+    [userPlaces]
+  );
 
   function handleStopRemovePlace() {
     setModalIsOpen(false);
@@ -37,6 +42,13 @@ export default function App() {
 
   return (
     <>
+      <Modal open={modalIsOpen} onClose={handleStopRemovePlace}>
+        <DeleteConfirmation
+          onConfirm={handleRemovePlace}
+          onCancel={handleStopRemovePlace}
+        />
+      </Modal>
+
       <header>
         <img src={logo} alt="" />
         <h1>Placepicker</h1>
@@ -44,13 +56,6 @@ export default function App() {
       </header>
 
       <main>
-        <Modal open={modalIsOpen} onClose={handleStopRemovePlace}>
-          <DeleteConfirmation
-            onConfirm={handleRemovePlace}
-            onCancel={handleStopRemovePlace}
-          />
-        </Modal>
-
         <Places
           title="Selected places"
           fallbackText="click on available places"

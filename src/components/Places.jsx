@@ -1,12 +1,12 @@
 export default function Places({ title, fallbackText, places, onSelectPlace }) {
   return (
-    <div className="places-category">
+    <section className="places-category">
       <h2>{title}</h2>
-      <ul className="places">
-        {places.length === 0 ? (
-          <p className="fallback-text">{fallbackText}</p>
-        ) : (
-          places.map((place) => (
+      {places.length === 0 ? (
+        <p className="fallback-text">{fallbackText}</p>
+      ) : (
+        <ul className="places">
+          {places.map((place) => (
             <li key={place.id} className="place-item">
               <button onClick={() => onSelectPlace(place)}>
                 <img
@@ -16,9 +16,9 @@ export default function Places({ title, fallbackText, places, onSelectPlace }) {
                 <h3>{place.title}</h3>
               </button>
             </li>
-          ))
-        )}
-      </ul>
-    </div>
+          ))}
+        </ul>
+      )}
+    </section>
   );
 }
