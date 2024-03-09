@@ -5,7 +5,7 @@ import { useState, useRef, useCallback, useEffect } from "react";
 import Modal from "./components/Modal";
 import DeleteConfirmation from "./components/DeleteConfirmation";
 import { sortPlacesByDistance } from "./loc";
-import { getPlaces, getUserPlaces, updateUserPlaces } from "./http";
+import { fetchAvailablePlaces, fetchUserPlaces } from "./http";
 
 export default function App() {
   const [userPlaces, setUserPlaces] = useState([]);
@@ -16,10 +16,10 @@ export default function App() {
   useEffect(() => {
     async function fetchData() {
       try {
-        const userPlacesData = await getUserPlaces();
+        const userPlacesData = await fetchUserPlaces();
         setUserPlaces(userPlacesData);
 
-        const placesData = await getPlaces();
+        const placesData = await fetchAvailablePlaces();
         navigator.geolocation.getCurrentPosition((position) => {
           const sortedPlaces = sortPlacesByDistance(
             placesData,

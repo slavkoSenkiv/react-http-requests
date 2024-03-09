@@ -1,36 +1,35 @@
-import axios from 'axios';
+const BASE_URL = "http://localhost:3000/";
 
-// Function to get places data from the server
-async function getPlaces() {
-  try {
-    const response = await axios.get('http://localhost:3000/places');
-    return response.data;
-  } catch (error) {
-    console.error('Error fetching places:', error);
-    throw error;
+export async function fetchAvailablePlaces() {
+  const response = await fetch(`${BASE_URL}places`);
+  const resData = await response.json();
+  if (!response.ok) {
+    throw new Error("failed to fetch places");
   }
+  return resData.places;
 }
 
-// Function to get user places data from the server
-async function getUserPlaces() {
-  try {
-    const response = await axios.get('http://localhost:3000/user-places');
-    return response.data;
-  } catch (error) {
-    console.error('Error fetching user places:', error);
-    throw error;
+export async function fetchUserPlaces() {
+  const response = await fetch(`${BASE_URL}user-places`);
+  const resData = await response.json();
+  if (!response.ok) {
+    throw new Error("failed to fetch user places");
   }
+  return resData.places;
 }
 
-// Function to update user places data on the server
-async function updateUserPlaces(newData) {
-  try {
-    const response = await axios.put('http://localhost:3000/user-places', newData);
-    return response.data;
-  } catch (error) {
-    console.error('Error updating user places:', error);
-    throw error;
+export async function updateUserPlaces(places) {
+  const response = await fetch(`${BASE_URL}user-places`, {
+    method: "PUT",
+    body: JSON.stringify({ places: places }),
+    headers: {
+      "Content-Type": "application/json",
+    },
+  });
+  const resData = await response.json();
+  if (!response.ok) {
+    throw new Error("Failed to update user data");
   }
-}
 
-export { getPlaces, getUserPlaces, updateUserPlaces };
+  return resData.message;
+}
