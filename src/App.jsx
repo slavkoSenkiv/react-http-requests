@@ -5,55 +5,54 @@ import { useState, useRef, useCallback, useEffect } from "react";
 import Modal from "./components/Modal";
 import DeleteConfirmation from "./components/DeleteConfirmation";
 import { sortPlacesByDistance } from "./loc";
-import { fetchAvailablePlaces, fetchUserPlaces } from "./http";
+import {
+  fetchAvailablePlaces,
+  fetchUserPlaces,
+  updateUserPlaces,
+} from "./http";
+import AvailablePlaces from "./components/AvailablePlaces";
 
 export default function App() {
   const [userPlaces, setUserPlaces] = useState([]);
   const [availableSortedPlaces, setAvailableSortedPlaces] = useState([]);
   const [modalIsOpen, setModalIsOpen] = useState(false);
+  const [isFetching, setIsFetching] = useState(false);
+  const [error, setError] = useState();
+  const [errorUpdatingPlaces, setErrorUpdatingPlaces] = useState();
   const selectedPlace = useRef();
 
   useEffect(() => {
-    async function fetchData() {
+    async function fetchPlaces() {
+      setIsFetching(true);
       try {
         const userPlacesData = await fetchUserPlaces();
         setUserPlaces(userPlacesData);
-
-        const placesData = await fetchAvailablePlaces();
-        navigator.geolocation.getCurrentPosition((position) => {
-          const sortedPlaces = sortPlacesByDistance(
-            placesData,
-            position.coords.latitude,
-            position.coords.longitude
-          );
-          setAvailableSortedPlaces(sortedPlaces);
-        });
       } catch (error) {
+        setError({ message: error.message || "failed to fetch user places" });
         console.error("Error fetching data:", error);
       }
+      setIsFetching(false);
     }
 
-    fetchData();
+    fetchPlaces();
   }, []);
 
-  useEffect(() => {
-    navigator.geolocation.getCurrentPosition((position) => {
-      const sortedPlaces = sortPlacesByDistance(
-        availablePlaces,
-        position.coords.latitude,
-        position.coords.longitude
-      );
-      setAvailableSortedPlaces(sortedPlaces);
-    });
-  }, []);
-
-  function handleSelectPlace(place) {
+  async function handleSelectPlace(place) {
     setUserPlaces((prevUserPlaces) => {
       if (prevUserPlaces.some((userPlace) => userPlace.id === place.id)) {
         return prevUserPlaces;
       }
       return [...prevUserPlaces, place];
     });
+    try {
+      await updateUserPlaces([...userPlaces, place]);
+    } catch (error) {
+      setUserPlaces(userPlaces);
+      setErrorUpdatingPlaces({
+        message: error.message || "failed to update user places",
+      });
+      console.error("Error fetching data:", error);
+    }
   }
 
   function handleStartRemovePlace(place) {
@@ -62,12 +61,25 @@ export default function App() {
   }
 
   const handleRemovePlace = useCallback(
-    function handleRemovePlace() {
-      setUserPlaces((prevUserPlaces) => {
-        return prevUserPlaces.filter(
+    async function handleRemovePlace() {
+      setUserPlaces((prevUserPlaces) =>
+        prevUserPlaces.filter(
           (userPlace) => userPlace.id !== selectedPlace.current.id
+        )
+      );
+      try {
+        await updateUserPlaces(
+          userPlaces.filter(
+            (userPlace) => userPlace.id !== selectedPlace.current.id
+          )
         );
-      });
+      } catch (error) {
+        setUserPlaces(userPlaces);
+        setErrorUpdatingPlaces({
+          message: error.message || "failed to delete user places",
+        });
+        console.error("Error fetching data:", error);
+      }
       setModalIsOpen(false);
     },
     [userPlaces]
@@ -77,8 +89,21 @@ export default function App() {
     setModalIsOpen(false);
   }
 
+  function handleError() {
+    setError(null);
+  }
+
   return (
     <>
+      <Modal open={errorUpdatingPlaces} oClose={handleError}>
+        {errorUpdatingPlaces && (
+          <Error
+            message={errorUpdatingPlaces.message}
+            onConfirm={handleError}
+          />
+        )}
+      </Modal>
+
       <Modal open={modalIsOpen} onClose={handleStopRemovePlace}>
         <DeleteConfirmation
           onConfirm={handleRemovePlace}
@@ -99,12 +124,7 @@ export default function App() {
           places={userPlaces}
           onSelectPlace={handleStartRemovePlace}
         />
-        <Places
-          title="Available places"
-          fallbackText="there are no available places for you"
-          places={availableSortedPlaces}
-          onSelectPlace={handleSelectPlace}
-        />
+        <AvailablePlaces onSelectPlace={handleSelectPlace}/>
       </main>
     </>
   );
