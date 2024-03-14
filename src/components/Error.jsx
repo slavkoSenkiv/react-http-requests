@@ -1,7 +1,7 @@
-export default function Error({ title, message, onConfirm }) {
+export default function Error ({message, onConfirm}) {
   return (
     <div className="error">
-      <h2>{title}</h2>
+      <h1>An Error Occured</h1>
       <p>{message}</p>
       {onConfirm && (
         <div id="confirmation-actions">
@@ -11,5 +11,5 @@ export default function Error({ title, message, onConfirm }) {
         </div>
       )}
     </div>
-  );
+  )
 }

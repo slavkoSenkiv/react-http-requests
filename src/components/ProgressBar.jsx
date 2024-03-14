@@ -1,11 +1,10 @@
-import { useState, useEffect } from 'react';
+import { useEffect, useState } from "react";
 
 export default function ProgressBar({ timer }) {
   const [remainingTime, setRemainingTime] = useState(timer);
-
   useEffect(() => {
     const interval = setInterval(() => {
-      setRemainingTime((prevTime) => prevTime - 10);
+      setRemainingTime((prevRemainingTime) => prevRemainingTime - 10);
     }, 10);
 
     return () => {

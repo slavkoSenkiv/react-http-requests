@@ -1,8 +1,8 @@
 import { useEffect, useState } from "react";
-import Places from "./Places.jsx";
-import Error from "./Error.jsx";
-import { sortPlacesByDistance } from "../loc.js";
-import { fetchAvailablePlaces } from "../http.js";
+import Places from "./Places";
+import Error from "./Error";
+import { sortPlacesByDistance } from "../loc";
+import { fetchAvailablePlaces } from "../http";
 
 export default function AvailablePlaces({ onSelectPlace }) {
   const [availablePlaces, setAvailablePlaces] = useState([]);
@@ -34,14 +34,14 @@ export default function AvailablePlaces({ onSelectPlace }) {
   }, []);
 
   if (error) {
-    return <Error title="An error occured" message={error.message} />;
+    return <Error message={error.message} />;
   }
 
   return (
     <Places
-      title="Available Places"
+      title="Available places"
       places={availablePlaces}
-      fallbackText="No places available."
+      fallbackText="there are no available places for you"
       onSelectPlace={onSelectPlace}
       isLoading={isFetching}
       loadingText="Fetching place data..."
