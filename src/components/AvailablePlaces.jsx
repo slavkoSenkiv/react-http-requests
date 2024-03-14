@@ -1,11 +1,15 @@
 import { useEffect, useState } from "react";
-import { fetchAvailablePlaces } from "../http";
 import Places from "./Places";
-export default function AvailablePlaces({onSelectPlace}) {
-  const [availablePlaces, setAvailablePlaces] = useState([])
-  const [isFetching, setIsFetching] = useState()
+import Error from "./Error";
+import { sortPlacesByDistance } from "../loc";
+import { fetchAvailablePlaces } from "../http";
 
-  useEffect(()=>{
+export default function AvailablePlaces({ onSelectPlace }) {
+  const [availablePlaces, setAvailablePlaces] = useState([]);
+  const [isFetching, setIsFetching] = useState(false);
+  const [error, setError] = useState();
+
+  useEffect(() => {
     async function fetchPlaces() {
       setIsFetching(true);
       try {
@@ -19,21 +23,28 @@ export default function AvailablePlaces({onSelectPlace}) {
           setAvailablePlaces(sortedPlaces);
           setIsFetching(false);
         });
-      } catch(error) {
+      } catch (error) {
         setError({
           message: error.message || "Cound not fetch places, please try later",
         });
-        setIsFetching(false)
+        setIsFetching(false);
       }
     }
-    fetchPlaces()
-  }, [])
+    fetchPlaces();
+  }, []);
+
+  if (error) {
+    return <Error message={error.message} />;
+  }
+
   return (
     <Places
       title="Available places"
+      places={availablePlaces}
       fallbackText="there are no available places for you"
-      places={availableSortedPlaces}
       onSelectPlace={onSelectPlace}
+      isLoading={isFetching}
+      loadingText="Fetching place data..."
     />
   );
 }

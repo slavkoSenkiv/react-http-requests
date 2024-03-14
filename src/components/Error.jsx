@@ -3,7 +3,13 @@ export default function Error ({message, onConfirm}) {
     <div className="error">
       <h1>An Error Occured</h1>
       <p>{message}</p>
-      <button onClick={onConfirm}>Ok</button>
+      {onConfirm && (
+        <div id="confirmation-actions">
+          <button onClick={onConfirm} className="button">
+            Okay
+          </button>
+        </div>
+      )}
     </div>
   )
 }
